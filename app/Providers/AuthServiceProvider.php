@@ -2,18 +2,21 @@
 
 namespace App\Providers;
 
-// use Illuminate\Support\Facades\Gate;
+use App\Models\WorkHandover;
+use App\Models\WorkingPermission;
+use App\User;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
     /**
-     * The model to policy mappings for the application.
+     * The policy mappings for the application.
      *
-     * @var array<class-string, class-string>
+     * @var array
      */
     protected $policies = [
-        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+        // 'App\Model' => 'App\Policies\ModelPolicy',
     ];
 
     /**
@@ -25,6 +28,27 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        //
+       Gate::define('isInTask', function ($user, $tasks){
+           $tasks = explode(':', $tasks);
+           $workingPermissions = $user->workingPermissions;
+           $user_tasks = [];
+           foreach ($workingPermissions as $permission){
+               array_push($user_tasks, strtolower($permission->task->key));
+           }
+           return array_intersect($tasks, $user_tasks);
+       });
+
+       Gate::define('handoverIsInTask', function ($user, $tasks, $userId){
+           if(WorkHandover::where([['user_id', $user->id], ['from_user_id', $userId], ['end_date', null]])->exists()){
+               $tasks = explode(':', $tasks);
+               $workingPermissions = WorkingPermission::where('user_id', $userId)->get();
+               $user_tasks = [];
+               foreach ($workingPermissions as $permission){
+                   array_push($user_tasks, strtolower($permission->task->key));
+               }
+               return array_intersect($tasks, $user_tasks);
+           }
+          return false;
+       });
     }
 }

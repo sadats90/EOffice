@@ -1,0 +1,15 @@
+@font-face {
+    font-family: Nikosh;
+    src: url(Nikosh.ttf);
+}
+.watermark {
+    background-image:url('rda-watermark.jpg');
+    background-repeat:repeat-y;
+    background-position: top;
+    background-attachment:scroll;
+    background-size:90%;
+    -webkit-print-color-adjust: exact;
+    color-adjust: exact;
+}
+
+
